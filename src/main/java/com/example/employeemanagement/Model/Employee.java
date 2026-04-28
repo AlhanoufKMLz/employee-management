@@ -30,7 +30,7 @@ public class Employee {
     private String phoneNumber;
 
     @NotNull(message = "Age can't be null")
-    @Min(value = 26, message = "Age must be at least 26")
+    @Min(value = 26, message = "Age must be greater than 25")
     private int age;
 
     @NotBlank(message = "Position can't be blank")

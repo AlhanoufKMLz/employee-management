@@ -82,4 +82,25 @@ public class EmployeeController {
 
         return ResponseEntity.status(200).body(positionEmployees);
     }
+
+    @GetMapping("get-age-range/{minAge}/{maxAge}")
+    public ResponseEntity<?> getByAgeRange(@PathVariable int minAge, @PathVariable int maxAge){
+        //check min and max values
+        if(minAge < 26 )
+            return ResponseEntity.status(400).body(new ApiResponse("Minimum age must be greater than 25"));
+        if(minAge > maxAge)
+            return ResponseEntity.status(400).body(new ApiResponse("Maximum age must be larger than minimum age"));
+
+        ArrayList<Employee> employeesWithAgeRange = new ArrayList<>();
+
+        for(Employee e: employees){
+            if(e.getAge() >= minAge && e.getAge() <= maxAge)
+                employeesWithAgeRange.add(e);
+        }
+
+        if(employeesWithAgeRange.isEmpty())
+            return ResponseEntity.status(404).body(new ApiResponse("There is no employees within the range: (" + minAge + ", " + maxAge + ")"));
+
+        return ResponseEntity.status(200).body(employeesWithAgeRange);
+    }
 }
