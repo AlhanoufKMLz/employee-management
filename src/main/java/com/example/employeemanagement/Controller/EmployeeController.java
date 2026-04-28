@@ -49,7 +49,7 @@ public class EmployeeController {
             }
         }
 
-        return ResponseEntity.status(400).body(new ApiResponse("Employee with ID: " + id + " Not found"));
+        return ResponseEntity.status(404).body(new ApiResponse("Employee with ID: " + id + " Not found"));
     }
 
     @DeleteMapping("/delete/{id}")
@@ -61,6 +61,25 @@ public class EmployeeController {
             }
         }
 
-        return ResponseEntity.status(400).body(new ApiResponse("Employee with ID: " + id + " Not found"));
+        return ResponseEntity.status(404).body(new ApiResponse("Employee with ID: " + id + " Not found"));
+    }
+
+    //EXTRA ENDPOINTS
+    @GetMapping("/get-position/{position}")
+    public ResponseEntity<?> getByPosition(@PathVariable String position){
+        if(!position.equalsIgnoreCase("supervisor") && !position.equalsIgnoreCase("coordinator"))
+            return ResponseEntity.status(400).body(new ApiResponse("Invalid position, please enter supervisor or coordinator"));
+
+        ArrayList<Employee> positionEmployees = new ArrayList<>();
+
+        for(Employee e: employees){
+            if(e.getPosition().equalsIgnoreCase(position))
+                positionEmployees.add(e);
+        }
+
+        if(positionEmployees.isEmpty())
+            return ResponseEntity.status(404).body(new ApiResponse("There is no employees in position: " + position));
+
+        return ResponseEntity.status(200).body(positionEmployees);
     }
 }
