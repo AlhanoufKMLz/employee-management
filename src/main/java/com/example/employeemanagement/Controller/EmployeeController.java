@@ -27,6 +27,10 @@ public class EmployeeController {
                 return ResponseEntity.status(400).body(new ApiResponse("An employee with ID: " + employee.getId() + " is already exist"));
         }
 
+        //check on leave value
+        if(employee.isOnLeave())
+            return ResponseEntity.status(400).body(new ApiResponse("Employee cannot be added with onLeave set to true"));
+
         employees.add(employee);
         return ResponseEntity.status(200).body(new ApiResponse("Employee added successfully"));
     }
@@ -83,7 +87,7 @@ public class EmployeeController {
         return ResponseEntity.status(200).body(positionEmployees);
     }
 
-    @GetMapping("get-age-range/{minAge}/{maxAge}")
+    @GetMapping("/get-age-range/{minAge}/{maxAge}")
     public ResponseEntity<?> getByAgeRange(@PathVariable int minAge, @PathVariable int maxAge){
         //check min and max values
         if(minAge < 26 )
@@ -102,5 +106,73 @@ public class EmployeeController {
             return ResponseEntity.status(404).body(new ApiResponse("There is no employees within the range: (" + minAge + ", " + maxAge + ")"));
 
         return ResponseEntity.status(200).body(employeesWithAgeRange);
+    }
+
+    @PutMapping("/apply-annual-leave/{id}")
+    public ResponseEntity<?> applyForAnnualLeave(@PathVariable String id){
+
+        for (Employee e: employees) {
+            if (e.getId().equalsIgnoreCase(id)) {
+                if(e.isOnLeave())
+                    return ResponseEntity.status(400).body(new ApiResponse("Employee is already on leave"));
+                if(e.getAnnualLeave() < 1)
+                    return ResponseEntity.status(400).body(new ApiResponse("Employee doesn't have any annual leave days left"));
+
+                e.setOnLeave(true);
+                e.setAnnualLeave(e.getAnnualLeave()-1);
+                return ResponseEntity.status(200).body(new ApiResponse("Annual Leave applied successfully"));
+            }
+        }
+
+        return ResponseEntity.status(404).body(new ApiResponse("Employee with ID: " + id + " Not found"));
+    }
+
+    @GetMapping("/get-no-leave")
+    public ResponseEntity<?> getWithNoAnnualLeave(){
+        ArrayList<Employee> employeesWithNoLeaves = new ArrayList<>();
+
+        for(Employee e: employees){
+            if(e.getAnnualLeave() == 0)
+                employeesWithNoLeaves.add(e);
+        }
+
+        if(employeesWithNoLeaves.isEmpty())
+            return ResponseEntity.status(404).body(new ApiResponse("There is no employees with no annual leave"));
+
+        return ResponseEntity.status(200).body(employeesWithNoLeaves);
+    }
+
+    @PutMapping("/promote/{supervisorId}/{employeeId}")
+    public ResponseEntity<?> promoteEmployee(@PathVariable String supervisorId, @PathVariable String employeeId){
+        //check for supervisor
+        boolean supervisorFound = false;
+        for(Employee e: employees){
+            if(e.getId().equalsIgnoreCase(supervisorId)){
+                supervisorFound = true;
+                if(!e.getPosition().equalsIgnoreCase("supervisor"))
+                    return ResponseEntity.status(400).body(new ApiResponse("Only supervisor can promote an employee"));
+                break;
+            }
+        }
+        if(!supervisorFound){
+            return ResponseEntity.status(404).body(new ApiResponse("Employee with ID: " + supervisorId + " Not found"));
+        }
+
+        //check the promoted employee
+        for(Employee e: employees){
+            if(e.getId().equalsIgnoreCase(employeeId)){
+                if(e.getAge() < 30)
+                    return ResponseEntity.status(400).body(new ApiResponse("Employee's age must be at least 30"));
+                if(e.isOnLeave())
+                    return ResponseEntity.status(400).body(new ApiResponse("Employee is currently on leave"));
+                if(e.getPosition().equalsIgnoreCase("supervisor"))
+                    return ResponseEntity.status(400).body(new ApiResponse("Employee is already a supervisor"));
+
+                e.setPosition("supervisor");
+                return ResponseEntity.status(200).body(new ApiResponse("Employee with ID: " + employeeId + " promoted successfully"));
+            }
+        }
+        return ResponseEntity.status(404).body(new ApiResponse("Employee with ID: " + employeeId + " Not found"));
+
     }
 }

@@ -4,11 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.apache.logging.log4j.message.Message;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -20,9 +17,7 @@ public class Employee {
 
     @NotBlank(message = "Name can't be blank")
     @Size(min = 5, message = "Name must be at least 5 character")
-    @Pattern(regexp = "^[\\p{L}]+$", message = "Must contain only characters")
-    private String name;
-
+    @Pattern(regexp = "^[\\p{L}]+(\\s[\\p{L}]+)*$", message = "Name must contain only letters and spaces")    private String name;
     @Email(message = "Not a valid email address")
     private String email;
 
@@ -31,13 +26,13 @@ public class Employee {
 
     @NotNull(message = "Age can't be null")
     @Min(value = 26, message = "Age must be greater than 25")
-    private int age;
+    private Integer age;
 
     @NotBlank(message = "Position can't be blank")
     @Pattern(regexp = "^(supervisor|coordinator)$", message = "Position must be either 'supervisor' or 'coordinator'")
     private String position;
 
-    private boolean onLeave = false;
+    private boolean onLeave;
 
     @NotNull(message = "Hire Date can't be null")
     @PastOrPresent(message = "Hire Date must be past or present")
@@ -46,6 +41,8 @@ public class Employee {
 
     @NotNull(message = "Annual Leave can't be null")
     @PositiveOrZero(message = "Annual Leave must be positive number")
-    private int annualLeave;
+    private Integer annualLeave;
+
+
 
 }
